@@ -1,0 +1,146 @@
+<!doctype html>
+<html class="no-js" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Facebook Analysis</title>
+		<link rel="stylesheet" href="css/foundation.css" />
+		<script src="js/vendor/modernizr.js"></script>
+		<style>
+
+		.bar {
+		  fill: #3a5795;
+		}
+
+		.bar:hover {
+		  fill: brown;
+		}
+
+		.axis {
+		  font: 12px sans-serif;
+		}
+
+		.axis path,
+		.axis line {
+		  fill: none;
+		  stroke: #000;
+		  shape-rendering: crispEdges;
+		}
+
+		.x.axis path {
+		  display: none;
+		}
+
+		</style>
+		<body>
+		<script src="js/d3.v3.min.js"></script>
+	</head>
+	<body>
+
+  	<%- include("head",{"head":"stat"}) %>
+
+    <div class="text-center" style="margin-top:30px;">
+    	<div>
+			<h4>Facebook Active Graph :</h4>
+			<div id="dashboard">
+			</div>
+		</div>
+	</div>
+    
+    <script src="js/vendor/jquery.js"></script>
+    <script src="js/foundation.min.js"></script>
+    <script>
+
+		function show_graph(data) {
+
+			var Npertime = data[0].length;
+
+			var margin = {top: 10, right: 10, bottom: 40, left: 40},
+			    width = 1480 - margin.left - margin.right,
+			    height = 600 - margin.top - margin.bottom;
+
+			var x = d3.scale.ordinal()
+			    .rangeRoundBands([0, width]);
+
+			var y = d3.scale.linear()
+			    .range([height, 0]);
+
+			var xAxis = d3.svg.axis()
+			    .scale(x)
+			    .orient("bottom");
+
+			var yAxis = d3.svg.axis()
+			    .scale(y)
+			    .orient("left")
+			    .tickFormat(function(d) { return d/1000+"K"; })
+			    .ticks(10);
+
+			var svg = d3.select("#dashboard").append("svg")
+			    .attr("width", width + margin.left + margin.right)
+			    .attr("height", height + margin.top + margin.bottom)
+			  .append("g")
+			    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			x.domain(data.map(function(d,i) { return i; }));
+			y.domain([0, d3.max(data, function(d) { return d3.max(d); })]);
+
+			svg.append("g")
+				.attr("class", "x axis")
+				.attr("transform", "translate("+(-x.rangeBand()/2-1)+"," + height + ")")
+				.call(xAxis)
+				.selectAll("text")
+				.text(function(d) {
+					return d+":00";
+				})
+				.attr("transform",function(d) {
+					return "translate(-13,23) rotate(-90)";
+				});
+
+			svg.append("g")
+				.attr("class", "y axis")
+				.attr("transform","translate(6,0)")
+				.call(yAxis)
+				.append("text")
+				.attr("transform", "translate(8,0) rotate(-90)")
+				.attr("y", 6)
+				.attr("dy", ".171em")
+				.style("text-anchor", "end")
+				.text("User Active Per "+<%= 60/JSON.parse(data)[0].length %>+" Minutes");
+
+			var compact_data = [];
+			for( var i=0; i<data.length; i++ ) {
+				for( var j=0; j<data[i].length; j++ ) {
+					compact_data.push( data[i][j] );
+				}
+			}
+
+			var inner_chart = svg.selectAll(".bar")
+				.data(compact_data)
+				.enter();
+
+			inner_chart
+				.append("rect")
+				.attr("class", "bar")
+				.attr("x", function(d,i) { 
+					return x( Math.floor(i/Npertime) ) + x.rangeBand()/Npertime*(i%Npertime); 
+				})
+				.attr("width", x.rangeBand()/Npertime )
+				.attr("y", function(d) { return y( d ); })
+				.attr("height", function(d) { return height - y( d ); });
+
+		}
+		var data = <%= data %>;
+
+		show_graph( data );
+
+		function type(d) {
+		  d.frequency = d.frequency;
+		  return d;
+		}
+
+	</script>
+    <script>
+		$(document).foundation();
+    </script>
+  </body>
+</html>

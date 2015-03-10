@@ -1,0 +1,84 @@
+<!doctype html>
+<html class="no-js" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Facebook Analysis</title>
+		<link rel="stylesheet" href="css/foundation.css" />
+		<script src="js/vendor/modernizr.js"></script>
+
+	</head>
+	<body>
+
+  	<%- include("head",{"head":"analysis"}) %>
+
+    <div class="row" style="margin-top:30px;">
+    	<div class="panel">
+			<h4>Log :</h4>
+			<div id="fetch-log" class="medium-12" style="padding:20px; font-size: 14px; height: 200px; overflow:scroll;">
+			</div>
+			<% if( box != "error" ) { %>
+				<form action="/query">
+					<input type="hidden" name="type" value="<%= box == "stop" ? "start_fetch" : "stop_fetch" %>">
+					<input type="button" onclick="fetch_data()" class="small radius button text-right" value="Fetch Log">
+					<input type="submit" class="small radius button text-right <%= box == "stop" ? "" : "alert" %>" 
+					value="<%= box == "stop" ? "Start" : "Stop" %>">
+				</form>
+			<% } %>
+		</div>
+	</div>
+
+	<div class="row" style="margin-top:30px;">
+		<h4>Progress :</h4>
+		<table id="show-list" class="center">
+			<thead>
+				<tr>
+					<th width="150">Pic</th>
+					<th width="750">Page Name</th>
+					<th width="100">Post</th>
+					<th width="100">Collected</th>
+				</tr>
+			</thead>
+			<tbody>
+				<% 
+				for( var i=0; i<list.length; i++ ) {
+				%>
+					<tr>
+						<td class="text-center"><img src="http://graph.facebook.com/<%= list[i].id %>/picture" width="50"></td>
+						<td><a href="http://www.facebook.com/<%= list[i].id %>" target="_blank"><%= list[i].name %></a></td>
+						<td class="text-center">
+							<%- list[i].fetch.commentId == "Init" ? "Init" : 
+							"<a href='"+list[i].fetch.commentId+"' target='_blank'>Post</a>" %>
+						</td>
+						<td class="text-center"><%= list[i].isFinish ? "Finish" : list[i].isCollecting ? "In Progress" : "No" %></td>
+					</tr>
+				<% } %>
+			</tbody>
+		</table>
+	</div>
+    
+    <script src="js/vendor/jquery.js"></script>
+    <script src="js/foundation.min.js"></script>
+    <script>
+    	function fetch_data() {
+    		$.get("/analysis?log=1",function(data) {
+    			var data = data.split("<br>");
+    			console.log( data.length );
+    			var tmp = [];
+    			for( var i=data.length-1; i>data.length-10; i-- ) {
+    				tmp = data[i].split("::");
+    				if( tmp[0] == "\nfetch_one" || tmp[0] == "\nno_comment" ) {
+    					tmp[1] = "<a href='http://www.facebook.com/"+tmp[1]+"' target='_blank'>"+tmp[1]+"</a>";
+    					var tt = tmp[2].split("_");
+    					tmp[2] = "<a href='http://www.facebook.com/"+tt[0]+"/posts/"+tt[1]+"' target='_blank'>"+tt[1]+"</a>";
+    					data[i] = tmp.join("::");
+    				}
+    			}
+    			$("#fetch-log").html( data.join("<br>") );
+			});
+    	}
+    	fetch_data();
+		$(document).foundation();
+    </script>
+  </body>
+</html>
