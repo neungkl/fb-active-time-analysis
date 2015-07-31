@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<!-- saved from url=(0031)http://localhost:8000/statistic -->
+<html class=" js flexbox flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths" lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Facebook Analysis</title>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css">
+		<style>
+
+		.bar {
+		  fill: #3a5795;
+		}
+
+		.bar:hover {
+		  fill: brown;
+		}
+
+		.axis {
+		  font: 12px sans-serif;
+		}
+
+		.axis path,
+		.axis line {
+		  fill: none;
+		  stroke: #000;
+		  shape-rendering: crispEdges;
+		}
+
+		.x.axis path {
+		  display: none;
+		}
+
+		</style>
+		<meta class="foundation-data-attribute-namespace"><meta class="foundation-mq-xxlarge"><meta class="foundation-mq-xlarge-only"><meta class="foundation-mq-xlarge"><meta class="foundation-mq-large-only"><meta class="foundation-mq-large"><meta class="foundation-mq-medium-only"><meta class="foundation-mq-medium"><meta class="foundation-mq-small-only"><meta class="foundation-mq-small"><style></style><meta class="foundation-mq-topbar"></head><body data-pinterest-extension-installed="cr1.38.2" data-feedly-mini="yes">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+
+
+
+  	<nav class="top-bar" data-topbar="" role="navigation">
+	<ul class="title-area">
+		<li class="name">
+			<h1><a href="#">Facebook Analysis</a></h1>
+		</li>
+		<!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
+		<li class="toggle-topbar menu-icon"><a href="#"><span></span></a></li>
+	</ul>
+
+
+<section class="top-bar-section">
+		<ul class="left">
+			<li class="active"><a href="#">Statistic</a></li>
+		</ul>
+	</section></nav>
+
+    <div class="text-center" style="margin-top:30px;">
+    	<div>
+			<h4>Facebook Active Graph :</h4>
+			<div id="dashboard">
+
+		</div>
+	</div>
+</div>
+
+    <script>
+
+		function show_graph(data) {
+
+			var Npertime = data[0].length;
+
+			var margin = {top: 10, right: 10, bottom: 40, left: 40},
+			    width = 1480 - margin.left - margin.right,
+			    height = 600 - margin.top - margin.bottom;
+
+			var x = d3.scale.ordinal()
+			    .rangeRoundBands([0, width]);
+
+			var y = d3.scale.linear()
+			    .range([height, 0]);
+
+			var xAxis = d3.svg.axis()
+			    .scale(x)
+			    .orient("bottom");
+
+			var yAxis = d3.svg.axis()
+			    .scale(y)
+			    .orient("left")
+			    .tickFormat(function(d) { return d/1000+"K"; })
+			    .ticks(10);
+
+			var svg = d3.select("#dashboard").append("svg")
+			    .attr("width", width + margin.left + margin.right)
+			    .attr("height", height + margin.top + margin.bottom)
+			  .append("g")
+			    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			x.domain(data.map(function(d,i) { return i; }));
+			y.domain([0, d3.max(data, function(d) { return d3.max(d); })]);
+
+			svg.append("g")
+				.attr("class", "x axis")
+				.attr("transform", "translate("+(-x.rangeBand()/2-1)+"," + height + ")")
+				.call(xAxis)
+				.selectAll("text")
+				.text(function(d) {
+					return d+":00";
+				})
+				.attr("transform",function(d) {
+					return "translate(-13,23) rotate(-90)";
+				});
+
+			svg.append("g")
+				.attr("class", "y axis")
+				.attr("transform","translate(6,0)")
+				.call(yAxis)
+				.append("text")
+				.attr("transform", "translate(8,0) rotate(-90)")
+				.attr("y", 6)
+				.attr("dy", ".171em")
+				.style("text-anchor", "end")
+				.text("User Active Per "+3+" Minutes");
+
+			var compact_data = [];
+			for( var i=0; i<data.length; i++ ) {
+				for( var j=0; j<data[i].length; j++ ) {
+					compact_data.push( data[i][j] );
+				}
+			}
+
+			var inner_chart = svg.selectAll(".bar")
+				.data(compact_data)
+				.enter();
+
+			inner_chart
+				.append("rect")
+				.attr("class", "bar")
+				.attr("x", function(d,i) {
+					return x( Math.floor(i/Npertime) ) + x.rangeBand()/Npertime*(i%Npertime);
+				})
+				.attr("width", x.rangeBand()/Npertime )
+				.attr("y", function(d) { return y( d ); })
+				.attr("height", function(d) { return height - y( d ); });
+
+		}
+		var data = [[12098,11754,11606,11421,11195,11204,10522,10345,9869,9674,9320,9282,9164,9220,8380,8886,8497,7789,7789,7265],[7411,6985,6857,6981,6691,6349,6034,5893,5967,5505,5252,4950,4870,4464,4684,4699,4284,4219,3918,3885],[3926,4050,3841,3641,3606,3331,3569,3271,3069,2955,2891,3258,2749,2705,2721,2650,2826,2583,2516,2665],[2437,2213,2307,2307,2490,1986,1964,1959,1901,1839,1814,1905,1830,1734,1883,1751,1836,1582,1588,1617],[1741,1477,1525,2422,1625,1387,1433,1353,1604,1896,1825,1305,1385,1316,1267,1251,1363,1276,1276,1549],[1425,1408,1423,1422,1404,1342,1439,1514,1456,1515,1455,1587,1627,1639,2286,1689,1728,1808,1843,1891],[2055,2112,2208,2323,2400,2424,2895,2638,2643,2667,2913,3412,3111,3302,3205,3544,3671,3717,3867,3914],[3958,4271,4125,4174,4452,4577,4836,4921,4811,5187,5251,5390,5531,5661,5699,5405,5378,5930,5599,5756],[6782,7382,7090,6971,6877,6711,7114,7138,7102,7698,7680,8169,8473,8685,8735,9356,9063,9019,8584,9386],[9592,9665,9795,10618,10881,11295,11436,12225,12556,13054,13643,12987,13489,13615,13583,13583,13541,14099,14065,14000],[14496,14334,14631,14664,14944,14122,14256,13939,13459,13552,13351,12983,13696,12828,12614,13101,13231,12957,13016,13653],[14963,14579,14373,13605,13674,13681,13581,13582,14015,13459,13335,13514,14432,14013,14704,14796,14584,14634,14122,14211],[14529,14286,14708,14395,14686,13687,14199,15217,15190,16301,15055,16580,16203,15473,16184,15428,15950,15661,15477,14920],[14918,14302,14903,14235,14994,15133,15501,15879,14849,16166,15594,15321,14728,14478,14793,14778,14624,14509,15301,15085],[15453,14729,15233,15502,15597,15483,15451,15014,15762,16658,16065,15560,15187,15257,15792,15110,15587,15512,15553,15284],[15214,15565,15253,15003,14909,14682,15075,15701,15811,15534,15661,16579,16692,16371,16423,16352,17256,18083,17518,17400],[17547,17217,16152,17282,16296,16197,16039,16677,16338,16697,16068,15763,15996,16144,15418,16327,17392,17092,17288,17040],[16975,16586,15840,15973,15788,15697,15610,15787,15655,15581,16668,15675,16206,15615,15884,17041,16720,15987,15345,15380],[18266,18523,17113,17378,17207,16571,17547,17048,15929,16033,18760,18480,17180,18373,17246,17645,17538,19315,17372,16373],[16807,18425,19494,19346,19175,18215,18413,18962,17805,17654,18723,17817,17387,18203,18781,18451,18703,19633,19836,20057],[23198,22738,22368,23569,21882,22259,21505,21680,21194,22248,23499,22704,23743,22185,21520,21545,21399,21489,22609,22841],[23639,22360,21796,21484,21425,21251,21805,21245,21958,24391,21066,20873,21081,21076,21600,22471,22311,22749,21992,22000],[22417,22089,21676,20681,20557,20439,20450,20900,20155,19044,20079,19595,19038,19576,18296,17865,18790,18524,18318,17686],[18110,18028,17731,17786,17218,16937,16355,16211,15643,15325,14898,15105,14905,14580,14515,14096,14140,13400,12698,12588]];
+
+		show_graph( data );
+
+		function type(d) {
+		  d.frequency = d.frequency;
+		  return d;
+		}
+
+	</script>
+    <script>
+		$(document).foundation();
+    </script>
+
+
+</body></html>
