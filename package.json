@@ -1,0 +1,14 @@
+{
+  "name": "fbactivetimeanalysis",
+  "private": true,
+  "dependencies": {
+    "ejs": "^2.3.1",
+    "express": "^4.12.2",
+    "mongojs": "^2.3.0",
+    "request": "^2.53.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

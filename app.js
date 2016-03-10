@@ -2,7 +2,7 @@ var express = require('express');
 var ejs = require("ejs");
 var request = require("request");
 var fs = require("fs");
-var db = require("mongojs").connect("localhost:27017/facebookactive",["list","log","fetch"]);
+var db = require("mongojs")("localhost:27017/facebookactive",["list","log","fetch"]);
 var app = express();
 
 var access_token = "";
@@ -19,10 +19,10 @@ function add_user( id,res,rec ) {
 	request("https://graph.facebook.com/v2.2/"+id+"?access_token="+access_token,function(err,response,body) {
 		if( !err && response.statusCode == 200 ) {
 			body = JSON.parse( body );
-			db.collection("list").count({id:id},function(e,r){ 
+			db.collection("list").count({id:id},function(e,r){
 				if( r == 0 ) {
 					db.collection("list").insert({
-	 					id: id, 
+	 					id: id,
 	 					name : body.name,
 	 					fistActive : false,
 	 					fetch: {
@@ -34,12 +34,12 @@ function add_user( id,res,rec ) {
 	 					isActive : false
 	 				},function(e,r){
 	 					if( e ) res.redirect(rec+"?err=1");
-	 					else res.redirect(rec);	
- 					});		
+	 					else res.redirect(rec);
+ 					});
 				} else {
 					res.redirect(rec+"?err=4");
 				}
-			}); 
+			});
 		} else {
 			res.redirect(rec+"?err=3");
 		}
@@ -47,7 +47,7 @@ function add_user( id,res,rec ) {
 }
 
 function re_featch_data() {
-	fetch_interval = setTimeout( fetch_data, 100 );	
+	fetch_interval = setTimeout( fetch_data, 100 );
 }
 
 var isFinished = false;
@@ -82,7 +82,7 @@ function fetch_data() {
 
 				var page_id = data.id;
 
-				var page_request = "https://graph.facebook.com/"+page_id+"/posts?fields=id&limit=1&access_token="+access_token; 
+				var page_request = "https://graph.facebook.com/"+page_id+"/posts?fields=id&limit=1&access_token="+access_token;
 				if( data.fetch.commentId != "init" ) {
 					page_request = data.fetch.commentId+"&access_token="+access_token;
 				}
@@ -97,7 +97,7 @@ function fetch_data() {
 					res = JSON.parse( res );
 
 					if( res.data.length == 0 ) {
-						db.collection("list").update( { id: page_id }, { $set: { isFinish : true } }, 
+						db.collection("list").update( { id: page_id }, { $set: { isFinish : true } },
 						function(){
 							re_featch_data();
 						});
@@ -106,14 +106,14 @@ function fetch_data() {
 
 					var comment_id = res.data[0].id;
 					var next_page = res.paging.next;
-					
+
 					request("https://graph.facebook.com/"+comment_id+"?fields=comments.limit(1000000){created_time}&access_token="+access_token,
 					function(err2,head2,res2) {
 						if( err2 ) {
 							fs.appendFile("log/log.txt","err2::"+err2.toString()+"<br>\n",function(){});
 							re_featch_data();
 							return ;
-						} 
+						}
 						var raw_data = JSON.parse( res2 );
 						var times_data = [];
 
@@ -129,7 +129,7 @@ function fetch_data() {
 
 						for( i in raw_data.comments.data ) {
 							times_data.push( raw_data.comments.data[i].created_time );
-						}						
+						}
 
 						db.collection("fetch").insert({
 							page_id : page_id,
@@ -149,7 +149,7 @@ function fetch_data() {
 			console.log("pause fetch");
 			//pause fetch
 		}
-	}); 
+	});
 }
 
 function fetch_log( res ) {
@@ -174,7 +174,7 @@ app.get('/', function (req, res) {
 	db.collection('list').find({"removed":false},function(err,result) {
 		if( err ) { result = []; }
 		var errNum = 0;
-		if( req.query.err ) errNum = req.query.err; 
+		if( req.query.err ) errNum = req.query.err;
 		res.render("index.ejs",{'list':result,'err':errNum});
 	});
 });
@@ -190,11 +190,11 @@ app.get( '/analysis',function(req,res) {
 		if( err || result == "" || !result ) box = "error";
 		box = result[0].status;
 		db.collection('list').find({isActive:true},function(err2,result2) {
-			if( err2 ) { result2 = []; } 
+			if( err2 ) { result2 = []; }
 			res.render("analysis.ejs",{'list':result2,'box':box});
 		});
 	});
-	
+
 });
 
 app.get("/statistic",function(req,res) {
@@ -258,7 +258,7 @@ app.get('/query',function(req,res) {
 		 		request("https://graph.facebook.com/v2.2/"+req.query.id+"/likes?access_token="+access_token,function(err,response,body) {
 		 			if( !err && response.statusCode == 200 ) {
 		 				body = JSON.parse(body);
-		 				
+
  						db.collection("list").update( {id:req.query.id},{$set:{isActive:true, firstActive:true}},function(){});
 		 				for( var i=0; i<body.data.length; i++ ) {
 		 					if( i == body.data.length-1 ) {
@@ -268,7 +268,7 @@ app.get('/query',function(req,res) {
 		 					}
 		 				}
 		 				if( body.data.length == 0 ) res.redirect(".");
-		 				
+
 		 			} else {
 		 				res.redirect(".?err=3");
 		 			}
@@ -302,5 +302,7 @@ app.get('/query',function(req,res) {
 	}
 });
 
-app.listen( 8000 );
+app.listen(8001, function() {
+	console.log('Web start at port 8001');
+});
 init();
