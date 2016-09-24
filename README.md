@@ -11,4 +11,4 @@ Sample Data ทั้งหมด :
 66 เพจ – 35,450 โพส – 5,789,525 คอมเม้นท์
 
 อ่านรายละเอียดเพิ่มเติมได้ที่
-[http://blog.kosatestudio.com/2015/05/18/facebook-activetime-analysis/](http://blog.kosatestudio.com/2015/05/18/facebook-activetime-analysis/)
+[http://blog.neungkl.com/2015/05/18/facebook-activetime-analysis/](http://blog.neungkl.com/2015/05/18/facebook-activetime-analysis/)
