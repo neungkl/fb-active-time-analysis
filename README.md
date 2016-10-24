@@ -1,5 +1,7 @@
 # Facebook Active Time Analysis
 
+![Facebook Active Time Analysis](preview.png)
+
 My persosnal side project.
 
 I try to start something with NodeJS. While thinking, this project come in to my mind.
